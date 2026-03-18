@@ -1,0 +1,70 @@
+{
+  "projectType": "general",
+  "projectName": "NoodleMapper",
+  "projectDescription": "A ChroMapper plugin for Beat Saber map creators that adds map range annotation, modmap management, and built-in Git version control directly inside the editor.",
+  "theme": "palm",
+  "primaryColor": "#7C5CBF",
+  "lightColor": "#A98AE0",
+  "darkColor": "#4B3480",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "installation", "quickstart"]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/map-ranges",
+              "concepts/modmaps",
+              "concepts/noodle-spans"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/enabling-noodlemapper",
+              "guides/working-with-ranges",
+              "guides/managing-modmaps",
+              "guides/git-version-control",
+              "guides/cloning-maps"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/file-formats",
+              "reference/filters",
+              "reference/settings",
+              "reference/keyboard-shortcuts"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Map range annotation with color-coded beat ranges displayed in the editor timeline",
+    "Modmap file management for attaching NoodleExtensions effect data to map difficulties",
+    "Built-in Git version control — init, commit, push, pull, fetch, and remote management from inside ChroMapper",
+    "GitHub CLI integration for creating private repositories and cloning maps directly from GitHub",
+    "Noodle span filter system for targeting notes by hand type (left/right) within effect spans",
+    "Per-difficulty map data files automatically named and managed alongside the Beat Saber Info.dat"
+  ],
+  "publicApiSurface": [
+    "MapData.FromJSON(JSONNode) / MapData.ToJSON()",
+    "MapRange — StartBeat, EndBeat, Color, Name",
+    "ModMapData.FromJSON(JSONNode) / ModMapData.ToJSON()",
+    "NoodleSpan — StartBeat, Duration, Filters, Processors",
+    "INoodleFilter.TestAgainst(BaseObject) / ToJSON()",
+    "INoodleSpanProcessor",
+    "HandTypeFilter — FilterTypeStr, Hand, FromJSONNode()",
+    "EditorManager.NMEnabled, CreateModmap(string), DeleteModmap(string)",
+    "Settings.Get(string, JSONNode?) / Settings.Set(string, JSONNode)",
+    "GitRunner.RunSync() / RunAsync() / RunGhAsync() / IsGitRepo() / HasGh()",
+    "Helpers.GetMapDataPath(string) / GetModMapDataPath(string) / GetModMapDataNames()"
+  ]
+}
