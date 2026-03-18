@@ -1,97 +1,69 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "NoodleMapper"
+description: "A ChroMapper plugin that adds map range annotation, modmap management, and built-in Git version control for Beat Saber map creators."
 ---
 
-## Setting up
-
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download and install NoodleMapper into your ChroMapper plugins folder
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Enable NoodleMapper on a difficulty and start annotating your map
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Map Ranges" icon="timeline" href="/concepts/map-ranges">
+    Color-coded beat ranges displayed directly in the editor timeline
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Git Version Control" icon="code-branch" href="/guides/git-version-control">
+    Commit, push, and pull your maps using the built-in Git panel
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What is NoodleMapper?
 
-Everything you need to create world-class documentation.
+NoodleMapper is a plugin for [ChroMapper](https://github.com/Caeden117/ChroMapper), the community Beat Saber map editor. It extends ChroMapper with three major capabilities:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+**Map range annotation** — Draw named, color-coded bars along the editor timeline to mark sections of your map (intro, verse, chorus, drop, etc.). Ranges are stored alongside your difficulty files and are purely a mapper's tool — they don't affect gameplay.
 
-## Need inspiration?
+**Modmap management** — Attach a `.modmap` file to any difficulty to store NoodleExtensions effect spans. A modmap defines time-based spans that target specific notes (by hand type, and more) and apply custom track assignments or other processors to them.
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+**Git version control** — A Git panel lives directly inside ChroMapper. Initialise a repo, commit your work, manage remotes, and push to GitHub without ever leaving the editor. If you have the GitHub CLI (`gh`) installed, NoodleMapper can create a private GitHub repository for you in one click.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Timeline range bars" icon="bars-progress">
+    Annotate any beat span with a name and color. Ranges sync colors across matching names automatically.
+  </Card>
+  <Card title="Modmap files" icon="file-code">
+    Create and assign `.modmap` files per difficulty. Each modmap stores effect spans with filters and processors.
+  </Card>
+  <Card title="Noodle span filters" icon="filter">
+    Target left-hand or right-hand notes within a span using the `HandTypeFilter`. The filter system is extensible via `INoodleFilter`.
+  </Card>
+  <Card title="Git panel" icon="git-alt">
+    Init, commit, fetch, pull, push, and manage remotes — all from inside the Song Edit Menu.
+  </Card>
+  <Card title="GitHub clone window" icon="github">
+    Browse your GitHub map repositories and clone them directly into CustomWIPLevels from the Song Select screen.
+  </Card>
+  <Card title="Per-difficulty data files" icon="folder-tree">
+    Each difficulty gets its own `.map` file named automatically after the difficulty + characteristic (e.g., `ExpertPlusStandard.map`).
+  </Card>
+</CardGroup>
+
+## How it fits together
+
+```
+YourSong/
+├── Info.dat                      ← Beat Saber song info
+├── ExpertPlusStandard.dat        ← Standard difficulty
+└── NoodleMapper/
+    ├── ExpertPlusStandard.map    ← NoodleMapper data (ranges + modmap link)
+    └── MyEffects.modmap          ← Modmap effect spans
+```
+
+The `.map` file is referenced from the difficulty's `CustomData` under the `"_NoodleMapperMap"` key. The `.modmap` file is referenced from the `.map` file under `"modMap"`. Both files are JSON and live in a `NoodleMapper/` folder inside your song directory.
+
+<Note>
+NoodleMapper only activates on a difficulty when you explicitly enable it. Difficulties without the `_NoodleMapperMap` custom data key are untouched.
+</Note>

@@ -1,0 +1,74 @@
+---
+title: Managing Modmaps
+description: How to create, assign, and delete modmap files for NoodleMapper difficulties.
+---
+
+A modmap is a JSON file that can be attached to a NoodleMapper-enabled difficulty. Modmaps allow you to associate extra mod-specific data with a difficulty without embedding it directly in the `.map` file.
+
+Modmap files are stored in the `NoodleMapper/` folder inside your song directory with a `.modmap` extension.
+
+## Assigning a modmap to a difficulty
+
+<Steps>
+  <Step title="Open the NoodleMapper window">
+    Press **Ctrl+N** inside the mapper scene to open the NoodleMapper editor window. Ensure NoodleMapper is enabled for the current difficulty.
+  </Step>
+
+  <Step title="Select a modmap from the dropdown">
+    At the top of the NoodleMapper window, find the **Active modmap** row. The dropdown lists all `.modmap` files currently in the `NoodleMapper/` folder.
+
+    Select the modmap you want to attach to this difficulty. The selection is saved as part of the difficulty's `.map` data.
+  </Step>
+
+  <Step title="Detach the modmap if needed">
+    To remove the modmap association from this difficulty, select **-none-** at the top of the dropdown. The `.modmap` file itself is not deleted — only the link from this difficulty to that file is removed.
+  </Step>
+</Steps>
+
+## Creating and deleting modmaps
+
+<Steps>
+  <Step title="Open the Modmap Manager">
+    Click the **...** button next to the Active modmap dropdown. The **Modmap files** window opens alongside the main NoodleMapper window.
+  </Step>
+
+  <Step title="Create a new modmap">
+    Click the **new...** button at the bottom of the Modmap Manager. An input box prompts you for a name.
+
+    - The name cannot be empty.
+    - A modmap with that name must not already exist.
+
+    Clicking confirm creates an empty `{}` JSON file at `NoodleMapper/{name}.modmap`.
+  </Step>
+
+  <Step title="Delete a modmap">
+    Click the **X** button next to a modmap name in the Modmap Manager. A confirmation dialog appears.
+
+    <Warning>
+      Deleting a modmap is permanent and cannot be undone. If the deleted modmap was assigned to the currently loaded difficulty, it is automatically detached from the `.map` data.
+    </Warning>
+
+    Click **Confirm** to delete the file.
+  </Step>
+</Steps>
+
+<Note>
+  The Modmap Manager closes automatically when you switch to a different difficulty, since modmap context is per-difficulty.
+</Note>
+
+## File structure
+
+Modmap files live alongside `.map` files in the `NoodleMapper/` subdirectory:
+
+```
+YourSong/
+  NoodleMapper/
+    ExpertPlusStandard.map
+    MyModmap.modmap
+```
+
+A newly created modmap contains only an empty JSON object:
+
+```json
+{}
+```

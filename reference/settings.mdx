@@ -1,0 +1,119 @@
+---
+title: Settings
+description: Reference for NoodleMapper's settings system, including file location, API methods, and key path conventions.
+---
+
+NoodleMapper stores plugin-wide configuration in a single JSON file managed by the `Settings` static class. Settings persist across editor sessions and are read lazily on first access.
+
+## File location
+
+```bash
+{Application.persistentDataPath}/NoodleMapper.json
+```
+
+`Application.persistentDataPath` is a Unity path that resolves to a platform-specific location, typically:
+
+| Platform | Path |
+|----------|------|
+| Windows  | `%APPDATA%/../LocalLow/{CompanyName}/{ProductName}` |
+| macOS    | `~/Library/Application Support/{CompanyName}/{ProductName}` |
+| Linux    | `~/.config/unity3d/{CompanyName}/{ProductName}` |
+
+<Info>
+  The settings file is created automatically on first access if it does not exist. You do not need to create it manually.
+</Info>
+
+---
+
+## API reference
+
+### Settings.Get
+
+```csharp
+public static JSONNode? Get(string name, JSONNode? defaultValue = null)
+```
+
+Reads a value from the settings file by key path. If the key is not present and `defaultValue` is provided, the default is written to the file and returned.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | Dot-separated key path (e.g., `"editor.showRanges"`). |
+| `defaultValue` | `JSONNode?` | Value to write and return if the key is missing. Optional. |
+
+**Returns:** The stored `JSONNode`, or `null` if the key is absent and no default was supplied.
+
+```csharp Example
+var opacity = Settings.Get("editor.rangeOpacity", 0.5f);
+```
+
+---
+
+### Settings.Set
+
+```csharp
+public static JSONNode Set(string name, JSONNode value)
+```
+
+Writes a value to the settings file at the given key path. The file is saved to disk immediately after each call.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `string` | Dot-separated key path. |
+| `value` | `JSONNode` | Value to store. |
+
+**Returns:** The value that was written.
+
+```csharp Example
+Settings.Set("editor.rangeOpacity", 0.75f);
+```
+
+---
+
+### Settings.Reload
+
+```csharp
+public static void Reload()
+```
+
+Discards the in-memory settings and re-reads the file from disk. Use this if the settings file has been edited externally.
+
+```csharp Example
+Settings.Reload();
+```
+
+---
+
+## Key path conventions
+
+Keys use **dot notation** to address nodes within the JSON object. The `Settings` class uses `Data.GetNode` and `Data.SetNode` internally to resolve paths.
+
+```csharp Key path examples
+// Reads/writes the top-level key "theme"
+Settings.Get("theme");
+
+// Reads/writes { "editor": { "showRanges": ... } }
+Settings.Get("editor.showRanges", true);
+```
+
+<Note>
+  The settings file is a flat or nested JSON object. Nesting depth depends on the dot-separated paths used by the code that reads and writes settings.
+</Note>
+
+---
+
+## Example settings file
+
+```json NoodleMapper.json
+{
+  "editor": {
+    "showRanges": true,
+    "rangeOpacity": 0.5
+  }
+}
+```
+
+---
+
+## Auto-save behavior
+
+`Settings.Set` writes the full settings file to disk on every call. There is no explicit save step. If you need to make multiple changes efficiently, be aware that each `Set` call triggers an I/O write.

@@ -1,0 +1,153 @@
+---
+title: Filters
+description: Reference for all NoodleSpan filter types, the INoodleFilter interface, and how to implement custom filters.
+---
+
+Filters control which beatmap objects a `NoodleSpan` acts on. Each span holds an array of filter objects under the `filters` key. An object must pass all filters in the array to be processed.
+
+Each filter object has a `type` string field that identifies its kind.
+
+---
+
+## HandTypeFilter
+
+Matches notes, chains, and arcs by hand color (left or right).
+
+**Type string:** `"HandType"`
+
+### Fields
+
+<ParamField body="type" type="string" required>
+  Must be `"HandType"`.
+</ParamField>
+
+<ParamField body="hand" type="number" required>
+  Which hand to match.
+
+  | Value | Hand  |
+  |-------|-------|
+  | `0`   | Left  |
+  | `1`   | Right |
+</ParamField>
+
+### Matched object types
+
+| Object type   | Match condition                                      |
+|---------------|------------------------------------------------------|
+| `BaseNote`    | `note.Color == hand` and `note.Type != Bomb`         |
+| `BaseChain`   | `chain.Color == hand`                                |
+| `BaseArc`     | `arc.Color == hand`                                  |
+| All others    | No match — filter returns `false`                    |
+
+<Info>
+  Bomb notes (`NoteType.Bomb`) are explicitly excluded and will never match a `HandTypeFilter`, even if their color value happens to match.
+</Info>
+
+### Example
+
+```json Left-hand filter
+{
+  "type": "HandType",
+  "hand": 0
+}
+```
+
+```json Right-hand filter
+{
+  "type": "HandType",
+  "hand": 1
+}
+```
+
+---
+
+## Unknown filter passthrough
+
+When NoodleMapper encounters a filter `type` it does not recognize, it wraps the raw JSON node in an `UnknownFilter` instead of discarding it.
+
+### Behavior
+
+- `TestAgainst` always returns `true` — the filter matches every object, so it does not block processing.
+- `ToJSON` returns the original JSON node unchanged.
+
+This design makes the format **forward compatible**: `.modmap` files written by a newer version of NoodleMapper (with filter types that this version doesn't know about) round-trip safely through load and save without data loss.
+
+<Warning>
+  Because unknown filters always pass, any objects within the span will be processed regardless of the unknown filter's intent. Upgrade NoodleMapper if you need the filter to have its intended effect.
+</Warning>
+
+---
+
+## INoodleFilter interface
+
+All filters implement `INoodleFilter`:
+
+```csharp
+public interface INoodleFilter
+{
+    bool TestAgainst(BaseObject obj);
+    JSONNode ToJSON();
+}
+```
+
+| Method | Description |
+|--------|-------------|
+| `TestAgainst(BaseObject obj)` | Returns `true` if the given beatmap object passes this filter. |
+| `ToJSON()` | Serializes the filter back to a `JSONNode` for saving to disk. |
+
+---
+
+## Implementing a custom filter
+
+To add a new filter type, implement `INoodleFilter` and register a case in `NoodleSpan.ParseFilter`.
+
+```csharp Custom filter example
+using Beatmap.Base;
+using NoodleMapper.ModMap;
+using SimpleJSON;
+
+public class MyCustomFilter : INoodleFilter
+{
+    public const string FilterTypeStr = "MyCustomType";
+
+    // Your filter state
+    public string SomeProperty { get; set; } = string.Empty;
+
+    public bool TestAgainst(BaseObject obj)
+    {
+        // Return true if obj should be processed
+        return obj is BaseNote;
+    }
+
+    public static MyCustomFilter FromJSONNode(JSONNode node)
+    {
+        var filter = new MyCustomFilter();
+        filter.SomeProperty = node.GetValueOrDefault("someProperty", "");
+        return filter;
+    }
+
+    public JSONNode ToJSON()
+    {
+        var node = new JSONObject();
+        node["type"] = FilterTypeStr;
+        node["someProperty"] = SomeProperty;
+        return node;
+    }
+}
+```
+
+Then add a case to `NoodleSpan.ParseFilter`:
+
+```csharp NoodleSpan.cs (excerpt)
+switch (type)
+{
+    case HandTypeFilter.FilterTypeStr:
+        return HandTypeFilter.FromJSONNode(filterNode);
+    case MyCustomFilter.FilterTypeStr:
+        return MyCustomFilter.FromJSONNode(filterNode);
+}
+```
+
+<Note>
+  Filters not added to the `switch` statement fall through to `UnknownFilter` and will always pass. Ensure your filter type string is unique to avoid collisions.
+</Note>

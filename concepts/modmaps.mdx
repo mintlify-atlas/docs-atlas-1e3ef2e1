@@ -1,0 +1,98 @@
+---
+title: "Modmaps"
+description: "Shareable .modmap files that store NoodleExtensions-style effect spans. A single modmap can be referenced by multiple difficulties."
+---
+
+A modmap is a JSON file that stores time-based NoodleExtensions effect data for your Beat Saber map. Unlike per-difficulty `.map` files, a modmap is **shared** — multiple difficulties can point to the same `.modmap` file, so a single set of effect spans can apply across Easy, Hard, Expert, and Expert+ without duplication.
+
+## File location and naming
+
+Modmaps live in the `NoodleMapper/` folder inside your song directory alongside `.map` files:
+
+```
+YourSong/
+├── Info.dat
+├── ExpertPlusStandard.dat
+└── NoodleMapper/
+    ├── ExpertPlusStandard.map    ← per-difficulty, links to the modmap
+    ├── ExpertStandard.map        ← can reference the same modmap
+    └── MyEffects.modmap          ← shared effect data
+```
+
+The filename (without the `.modmap` extension) is the modmap's **name**. The name is what you use to link a difficulty to that modmap.
+
+## Linking a difficulty to a modmap
+
+Inside a `.map` file, the `"modMap"` key holds the modmap name (no extension, no path):
+
+```json ExpertPlusStandard.map
+{
+  "modMap": "MyEffects",
+  "ranges": [
+    {
+      "s": 0.0,
+      "e": 16.0,
+      "c": { "r": 0.5, "g": 0.8, "b": 1.0, "a": 1.0 },
+      "n": "Intro"
+    }
+  ]
+}
+```
+
+When NoodleMapper loads this `.map` file it looks for `NoodleMapper/MyEffects.modmap` relative to the song directory. If that file exists, its contents are loaded as the active `ModMapData`.
+
+<Note>
+If `"modMap"` is absent or the file it points to doesn't exist, NoodleMapper loads without any modmap. Existing ranges are still loaded normally.
+</Note>
+
+## Modmap JSON structure
+
+A `.modmap` file is a JSON object with a single top-level key, `"spans"`, which holds an array of [Noodle spans](/concepts/noodle-spans):
+
+```json MyEffects.modmap
+{
+  "spans": [
+    {
+      "b": 16.0,
+      "d": 8.0,
+      "filters": [
+        {
+          "type": "HandType",
+          "hand": 0
+        }
+      ]
+    },
+    {
+      "b": 32.0,
+      "d": 4.0,
+      "filters": [
+        {
+          "type": "HandType",
+          "hand": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+## .map vs. .modmap
+
+<CardGroup cols={2}>
+  <Card title=".map file" icon="file">
+    One per difficulty. Stores map ranges and the modmap link. Named after the difficulty and characteristic (e.g., `ExpertPlusStandard.map`).
+  </Card>
+  <Card title=".modmap file" icon="file-code">
+    Shared across difficulties. Stores Noodle effect spans (filters and processors). Named freely (e.g., `MyEffects.modmap`).
+  </Card>
+</CardGroup>
+
+This separation lets you maintain one set of NoodleExtensions effects and apply them consistently to every difficulty in your song without keeping duplicate copies in sync.
+
+## When the modmap is written
+
+NoodleMapper writes the `.modmap` file to disk whenever it saves the parent `.map` file. Both files are always kept in sync — you don't need to save them separately.
+
+<Warning>
+Renaming a `.modmap` file outside of NoodleMapper will break the link in any `.map` file that references it by the old name. Update the `"modMap"` value in each affected `.map` file to match the new filename.
+</Warning>

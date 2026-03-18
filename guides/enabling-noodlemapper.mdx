@@ -1,0 +1,64 @@
+---
+title: Enabling NoodleMapper on a Difficulty
+description: How to opt a specific Beat Saber difficulty into NoodleMapper so it gets its own .map data file.
+---
+
+NoodleMapper is opt-in on a per-difficulty basis. Enabling it writes a custom data key into your `Info.dat` and creates a dedicated `.map` file that stores all NoodleMapper data for that difficulty.
+
+## Steps
+
+<Steps>
+  <Step title="Open your song in ChroMapper">
+    Launch ChroMapper and load the song you want to work on. You will land on the **Song Edit Menu** (the song info panel screen).
+  </Step>
+
+  <Step title="Open the Map Config window">
+    Click the **NoodleMapper** button in the bottom-right corner of ChroMapper's song info panel. This opens the **Map Config** window, which lists every difficulty across all characteristics.
+  </Step>
+
+  <Step title="Enable NoodleMapper for a difficulty">
+    Find the row for the difficulty you want to enable (e.g., `ExpertPlusStandard`). Toggle the **Enable NM** switch on.
+
+    Toggling the switch marks that difficulty as dirty (unsaved changes) so ChroMapper knows to save it.
+  </Step>
+
+  <Step title="Save the difficulty">
+    Save the difficulty through ChroMapper's normal save flow. NoodleMapper hooks into the save process and writes the `.map` file at that point.
+  </Step>
+</Steps>
+
+## What happens under the hood
+
+When you enable NoodleMapper for a difficulty, the plugin writes the key `_nmMap` into the difficulty's `customData` block inside `Info.dat`:
+
+```json
+"customData": {
+  "_nmMap": "ExpertPlusStandard"
+}
+```
+
+The value is the **map file name** (without extension). NoodleMapper stores its data in a `NoodleMapper/` subdirectory inside your song folder, so the full path for the example above would be:
+
+```
+YourSong/
+  NoodleMapper/
+    ExpertPlusStandard.map
+```
+
+The file name is always `{Difficulty}{Characteristic}` — for example, `ExpertPlusStandard`, `HardOneSaber`, or `EasyLawless`.
+
+<Note>
+  Map data saves automatically whenever ChroMapper saves the difficulty. NoodleMapper hooks into `BaseDifficulty.Save` via a Harmony patch, so no separate save step is needed.
+</Note>
+
+## Copied difficulties
+
+If you copy a difficulty in ChroMapper, the copied difficulty will initially reference the source difficulty's `.map` file name. NoodleMapper detects this mismatch on the next save and automatically corrects the file name to match the new difficulty, creating the correctly named file for you.
+
+<Note>
+  The auto-correction happens silently at save time. If you copy a difficulty, just save it once and NoodleMapper will sort out the file naming.
+</Note>
+
+## Disabling NoodleMapper
+
+Toggle **Enable NM** off in the Map Config window and save. The `_nmMap` key is removed from `customData`. The existing `.map` file on disk is not deleted — only the reference to it is removed from `Info.dat`.

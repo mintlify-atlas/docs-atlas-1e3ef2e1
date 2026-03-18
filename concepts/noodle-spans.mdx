@@ -1,0 +1,174 @@
+---
+title: "Noodle spans"
+description: "Time-bounded effect regions stored in a modmap. Each span selects a set of notes using filters and applies processors to them."
+---
+
+A noodle span defines a window of time in your map — measured in beats — and describes what should happen to the notes inside that window. Spans are stored in a [modmap](/concepts/modmaps) under the `"spans"` array.
+
+## Data model
+
+| Field | Type | JSON key | Default | Description |
+|---|---|---|---|---|
+| `StartBeat` | `float` | `"b"` | `0` | Beat where the span begins |
+| `Duration` | `float` | `"d"` | `0` | Length of the span in beats |
+| `Filters` | `List<INoodleFilter>` | `"filters"` | `[]` | Filters that determine which notes are affected |
+| `Processors` | `List<INoodleSpanProcessor>` | _(runtime only)_ | `[]` | Operations applied to each matched note |
+
+<Note>
+Processors are applied at runtime by NoodleMapper and are not persisted in the JSON file. Only filters are serialized.
+</Note>
+
+## Filters
+
+Filters decide which `BaseObject` instances within the span's beat range are affected. Every filter implements `INoodleFilter`:
+
+```csharp
+public interface INoodleFilter
+{
+    bool TestAgainst(BaseObject obj);
+    JSONNode ToJSON();
+}
+```
+
+`TestAgainst` returns `true` when the object should be processed. All filters in a span's list must pass for a note to be affected (AND logic).
+
+### HandTypeFilter
+
+The built-in `HandTypeFilter` targets notes by the hand that hits them.
+
+| JSON field | Type | Value |
+|---|---|---|
+| `"type"` | `string` | `"HandType"` (required) |
+| `"hand"` | `int` | `0` = left hand, `1` = right hand |
+
+It matches:
+- **Notes** (`BaseNote`) — checks `Color` equals the hand value and ensures the note is not a bomb
+- **Chains** (`BaseChain`) — checks `Color` equals the hand value
+- **Arcs** (`BaseArc`) — checks `Color` equals the hand value
+
+Any other object type returns `false`.
+
+```json HandTypeFilter targeting left hand
+{
+  "type": "HandType",
+  "hand": 0
+}
+```
+
+### UnknownFilter
+
+When NoodleMapper encounters a filter `"type"` it doesn't recognize, it wraps the raw JSON node in an `UnknownFilter`. This preserves the data exactly as-is during save/load round-trips.
+
+`UnknownFilter.TestAgainst` always returns `true`, so unknown filters never block processing — they are passthrough placeholders.
+
+## Processors
+
+Processors implement `INoodleSpanProcessor` and mutate matched objects:
+
+```csharp
+public interface INoodleSpanProcessor
+{
+    void Process(BaseObject obj);
+}
+```
+
+### AssignTrackProcessor
+
+The built-in `AssignTrackProcessor` sets the `"track"` field in an object's custom data:
+
+- Supports `BaseNote`, `BaseChain`, `BaseArc`, and `BaseObstacle`
+- Writes `obj.CustomData["track"] = TrackName` and calls `obj.RefreshCustom()`
+
+This is the primary way to assign NoodleExtensions track names to notes based on when they appear in the map.
+
+## Complete span example
+
+A span starting at beat 16, lasting 8 beats, targeting left-hand notes:
+
+```json MyEffects.modmap
+{
+  "spans": [
+    {
+      "b": 16.0,
+      "d": 8.0,
+      "filters": [
+        {
+          "type": "HandType",
+          "hand": 0
+        }
+      ]
+    }
+  ]
+}
+```
+
+A span with multiple filters (left-hand notes only, plus a custom filter preserved from an older version):
+
+```json MyEffects.modmap
+{
+  "spans": [
+    {
+      "b": 32.0,
+      "d": 4.0,
+      "filters": [
+        {
+          "type": "HandType",
+          "hand": 0
+        },
+        {
+          "type": "MyCustomFilter",
+          "someField": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+The `"MyCustomFilter"` entry is preserved as an `UnknownFilter` and will survive save/load without data loss.
+
+## Extending the filter system
+
+You can add new filter types by implementing `INoodleFilter` in a separate plugin or mod. The interface requires two members:
+
+```csharp
+public class MyFilter : INoodleFilter
+{
+    public bool TestAgainst(BaseObject obj)
+    {
+        // return true if this object should be processed
+        return obj is BaseNote;
+    }
+
+    public JSONNode ToJSON()
+    {
+        var node = new JSONObject();
+        node["type"] = "MyFilter";
+        // add any extra fields here
+        return node;
+    }
+}
+```
+
+Similarly, new processor types can be created by implementing `INoodleSpanProcessor`:
+
+```csharp
+public class MyProcessor : INoodleSpanProcessor
+{
+    public void Process(BaseObject obj)
+    {
+        // mutate obj as needed
+        obj.CustomData["myField"] = "myValue";
+        obj.RefreshCustom();
+    }
+}
+```
+
+<AccordionGroup>
+  <Accordion title="Why are processors not in the JSON?">
+    Processors are applied by NoodleMapper's processing pipeline at runtime — they aren't configuration data, they're code. The JSON only needs to store the filter rules that select which notes to process. The choice of processor (e.g., `AssignTrackProcessor`) is determined by the processing pipeline, not by the span definition itself.
+  </Accordion>
+  <Accordion title="What happens with an unrecognized filter type?">
+    NoodleMapper wraps it in an `UnknownFilter`, which always returns `true` from `TestAgainst` and re-serializes the original JSON node unchanged. This ensures that spans authored with a newer or third-party filter type are not silently dropped when opened in a version of NoodleMapper that doesn't know about that type.
+  </Accordion>
+</AccordionGroup>

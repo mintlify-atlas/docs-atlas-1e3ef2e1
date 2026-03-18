@@ -1,0 +1,65 @@
+---
+title: "Introduction"
+description: "What NoodleMapper is, what it solves, and how it fits into your Beat Saber mapping workflow."
+---
+
+NoodleMapper is a plugin for [ChroMapper](https://github.com/Caeden117/ChroMapper), the community Beat Saber map editor. It extends ChroMapper with three capabilities that the base editor does not provide: annotating sections of your map with colored beat ranges, managing NoodleExtensions effect files (modmaps) per difficulty, and running Git version control directly inside the editor.
+
+## The problem it solves
+
+As a Beat Saber map grows, it becomes harder to navigate and reason about. ChroMapper's timeline shows notes, walls, and lighting events — but it has no concept of named sections. You can't look at the timeline and see "this is the chorus" or "this is the drop." You also can't attach custom effect data to a specific difficulty without leaving the editor, and there's no built-in way to commit or push your map to a remote repository.
+
+NoodleMapper addresses all three gaps without requiring external tools to be open alongside ChroMapper.
+
+## Three pillars
+
+### Map range annotation
+
+A map range is a named, color-coded bar that spans a beat interval. Ranges are displayed along the editor timeline so you can see the structure of your map at a glance. You can add any number of ranges per difficulty, name them freely, reorder them by dragging, and sort them by start beat. If two ranges share the same name, NoodleMapper automatically synchronizes their color — useful when you're color-coding sections that repeat (verse, verse, verse).
+
+Ranges are stored in a `.map` file inside a `NoodleMapper/` subdirectory within your song folder. They are a mapper's tool only and have no effect on gameplay.
+
+### Modmap management
+
+A modmap is a JSON file (`.modmap`) that stores NoodleExtensions effect spans for a difficulty. Each span targets a beat range and a filter (for example, left-hand notes only) and applies one or more processors (for example, assigning a custom track). You can create multiple named modmap files per song and assign one to any NoodleMapper-enabled difficulty.
+
+Modmaps live alongside the `.map` file in the same `NoodleMapper/` directory.
+
+### Git version control
+
+Two Git interfaces are built into ChroMapper when NoodleMapper is installed:
+
+- **Git window** (Song Edit Menu) — initialise a repo, manage the `origin` remote, commit with a message, fetch, pull, and push. If you have the [GitHub CLI](https://cli.github.com/) (`gh`) installed, pushing to a repo that has no remote configured will prompt NoodleMapper to create a private GitHub repository for you automatically.
+- **Clone window** (Song Select screen) — paste a Git URL and clone a map repository directly into your `CustomWIPLevels` folder. With `gh` authenticated, your own GitHub map repositories are listed automatically.
+
+## Relationship to ChroMapper
+
+NoodleMapper is a standard ChroMapper plugin — a `.dll` file dropped into ChroMapper's `Plugins/` folder. It uses ChroMapper's plugin API and Harmony patches to add UI elements to existing ChroMapper screens without modifying any ChroMapper files. It registers scene managers for three scenes:
+
+| Scene | Manager | What it adds |
+|---|---|---|
+| `SongSelectMenu` | `SongSelectManager` | "Clone from Git" button |
+| `SongEditMenu` | `SongEditorManager` | **NoodleMapper** and **Git** buttons in the song info panel |
+| `Mapper` | `EditorManager`, `EditorGridAndTrackController` | Range bars on the timeline, NoodleMapper editor window |
+
+## Requirements
+
+- ChroMapper installed on your machine
+- .NET Framework 4.8 runtime (shipped with ChroMapper on Windows)
+- Git installed and on your `PATH` if you want to use the Git features
+- GitHub CLI (`gh`) — optional, required only for automatic repo creation and the GitHub clone browser
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Copy the compiled plugin into ChroMapper's Plugins folder and verify it loads.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Enable NoodleMapper on a difficulty and add your first map range in under five minutes.
+  </Card>
+  <Card title="Map ranges" icon="timeline" href="/concepts/map-ranges">
+    Learn how ranges are stored, displayed, and color-synced.
+  </Card>
+  <Card title="Modmaps" icon="file-code" href="/concepts/modmaps">
+    Understand the modmap file format and how spans and filters work.
+  </Card>
+</CardGroup>

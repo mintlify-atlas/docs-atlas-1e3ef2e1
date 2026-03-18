@@ -1,0 +1,60 @@
+---
+title: Keyboard shortcuts
+description: All keyboard shortcuts and UI entry points for the NoodleMapper plugin.
+---
+
+## Keyboard shortcuts
+
+| Shortcut | Action | Scene |
+|----------|--------|-------|
+| `Ctrl+N` | Toggle the NoodleMapper editor window | Mapper |
+
+### Ctrl+N — Toggle editor window
+
+Opens or closes the `EditorMainWindow` (the main NoodleMapper editor panel).
+
+**Conditions for the shortcut to fire:**
+
+- The **Mapper** scene must be active.
+- The **Node Editor** input action map must be enabled. NoodleMapper registers this action on the `"Node Editor"` action map in ChroMapper's input system.
+- The **NodeEditorController** must not be active. When the node editor is open, the same action map is in use and the shortcut is suppressed to avoid conflicts.
+- `Ctrl` (left or right) must be held while pressing `N`.
+
+<Info>
+  The shortcut is registered at plugin initialization using Unity's Input System `ButtonWithOneModifier` composite binding:
+
+  ```csharp
+  toggleWindow.AddCompositeBinding("ButtonWithOneModifier")
+      .With("Modifier", "<Keyboard>/ctrl")
+      .With("Button", "<Keyboard>/n");
+  ```
+
+  It is attached to an action named `"NoodleEditor Window"` added to the existing `"Node Editor"` action map.
+</Info>
+
+---
+
+## UI entry points
+
+In addition to the keyboard shortcut, NoodleMapper can be opened from several UI buttons.
+
+### Song Edit Menu buttons
+
+These buttons appear in the bottom-right of the Song Edit Menu (the song/difficulty selection screen).
+
+| Button | Position | Opens |
+|--------|----------|-------|
+| **NoodleMapper** | Bottom-right | `SongEditorWindow` — manage `.map` and `.modmap` files for the selected song |
+| **Git** | Bottom-right, left of NoodleMapper | `GitWindow` — source control integration |
+
+### Mapper toolbar button
+
+| Button | Location | Opens |
+|--------|----------|-------|
+| **Extension button** | Mapper toolbar (ChroMapper extension button area) | `EditorMainWindow` — the main NoodleMapper editor panel |
+
+The extension button triggers `EditorMainWindow.ToggleUI` via `Globals.Events.ExtensionButtonClicked`, which is registered during `EditorManager.PostInit`.
+
+<Note>
+  The Mapper toolbar extension button and `Ctrl+N` both toggle the same `EditorMainWindow`. Either can be used interchangeably while in the Mapper scene.
+</Note>

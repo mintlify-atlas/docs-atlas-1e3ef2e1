@@ -1,0 +1,179 @@
+---
+title: File formats
+description: Reference for all file formats used by NoodleMapper, including .map, .modmap, and the settings file.
+---
+
+NoodleMapper uses three file types to store per-difficulty data, effect span data, and plugin settings. All files are plain JSON.
+
+## Directory structure
+
+<Tree>
+  <Tree.Folder name="{SongDir}" defaultOpen>
+    <Tree.Folder name="NoodleMapper" defaultOpen>
+      <Tree.File name="{Difficulty}{Characteristic}.map" />
+      <Tree.File name="{name}.modmap" />
+    </Tree.Folder>
+    <Tree.File name="Info.dat" />
+  </Tree.Folder>
+</Tree>
+
+---
+
+## .map file
+
+Stores per-difficulty NoodleMapper data. One `.map` file exists per difficulty that has NoodleMapper enabled.
+
+**Location:** `{SongDir}/NoodleMapper/{name}.map`
+
+The `.map` file is referenced from the difficulty's `CustomData` in `Info.dat` using the key `_nmMap`:
+
+```json Info.dat (excerpt)
+{
+  "_difficulties": [
+    {
+      "_difficulty": "ExpertPlus",
+      "_beatmapFilename": "ExpertPlusStandard.dat",
+      "_customData": {
+        "_nmMap": "ExpertPlusStandard"
+      }
+    }
+  ]
+}
+```
+
+<Info>
+  The value of `_nmMap` is the filename stem (without extension) of the `.map` file inside the `NoodleMapper/` folder.
+</Info>
+
+### Fields
+
+<ParamField body="modMap" type="string">
+  Name of the `.modmap` file (without extension) to load for this difficulty. The file is resolved to `{SongDir}/NoodleMapper/{modMap}.modmap`.
+</ParamField>
+
+<ParamField body="ranges" type="object[]">
+  Array of `MapRange` objects that define labeled, colored beat ranges shown in the editor timeline.
+
+  <Expandable title="MapRange fields">
+    <ParamField body="s" type="number" required>
+      Start beat of the range.
+    </ParamField>
+
+    <ParamField body="e" type="number">
+      End beat of the range. Omitted when `abs(start - end) < 0.01` (i.e., the range is a single point).
+    </ParamField>
+
+    <ParamField body="c" type="Color">
+      Unity `Color` value for the range marker. Serialized as an object with `r`, `g`, `b`, `a` components in the range 0–1.
+    </ParamField>
+
+    <ParamField body="n" type="string">
+      Display name of the range.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Example
+
+```json ExpertPlusStandard.map
+{
+  "modMap": "lights",
+  "ranges": [
+    {
+      "s": 0,
+      "e": 32,
+      "c": { "r": 1, "g": 0.2, "b": 0.2, "a": 1 },
+      "n": "Intro"
+    },
+    {
+      "s": 32,
+      "c": { "r": 0.2, "g": 1, "b": 0.2, "a": 1 },
+      "n": "Drop"
+    }
+  ]
+}
+```
+
+<Note>
+  The second range above has no `e` field because `abs(32 - 32) < 0.01` — it marks a single beat rather than a span.
+</Note>
+
+---
+
+## .modmap file
+
+Stores effect span data shared across difficulties. A `.modmap` file is referenced by one or more `.map` files via the `modMap` field.
+
+**Location:** `{SongDir}/NoodleMapper/{name}.modmap`
+
+### Fields
+
+<ParamField body="spans" type="object[]">
+  Array of `NoodleSpan` objects. Each span defines a beat range and a set of filters and processors to apply to objects within that range.
+
+  <Expandable title="NoodleSpan fields">
+    <ParamField body="b" type="number" required>
+      Start beat of the span.
+    </ParamField>
+
+    <ParamField body="d" type="number" required>
+      Duration of the span in beats.
+    </ParamField>
+
+    <ParamField body="filters" type="object[]">
+      Array of filter objects. Each filter determines which beatmap objects the span's processors act on. See [Filters](/reference/filters) for all filter types.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Example
+
+```json lights.modmap
+{
+  "spans": [
+    {
+      "b": 0,
+      "d": 16,
+      "filters": [
+        {
+          "type": "HandType",
+          "hand": 0
+        }
+      ]
+    },
+    {
+      "b": 16,
+      "d": 16,
+      "filters": [
+        {
+          "type": "HandType",
+          "hand": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+The first span runs from beat 0 to beat 16 and targets left-hand (red) notes. The second span runs from beat 16 to beat 32 and targets right-hand (blue) notes.
+
+---
+
+## Settings file
+
+Stores plugin-wide settings managed by the `Settings` class.
+
+**Location:** `{Application.persistentDataPath}/NoodleMapper.json`
+
+The file is a flat JSON object. It is created automatically on first access if it does not exist. Keys use dot notation as defined by the `Settings.Get` / `Settings.Set` API.
+
+See [Settings](/reference/settings) for the full API reference.
+
+### Example
+
+```json NoodleMapper.json
+{
+  "editor.showRanges": true,
+  "editor.rangeOpacity": 0.5
+}
+```

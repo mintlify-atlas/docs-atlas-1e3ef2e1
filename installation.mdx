@@ -1,0 +1,153 @@
+---
+title: "Installation"
+description: "Install NoodleMapper into ChroMapper by copying the compiled plugin DLL into the Plugins folder."
+---
+
+NoodleMapper is distributed as a single `.dll` file. Installation means placing that file in the right folder. You can either build the plugin from source or copy a pre-built binary.
+
+## Prerequisites
+
+- **ChroMapper** installed on your machine — you need to know the path to your ChroMapper install directory (the folder that contains `ChroMapper.exe`).
+- **Git** installed and on your `PATH` if you intend to use the Git features.
+- **GitHub CLI** (`gh`) — optional. Required only for automatic GitHub repository creation and the GitHub clone browser in the Song Select screen.
+
+---
+
+## Option A: Build from source
+
+<Steps>
+  <Step title="Install the toolchain">
+    You need Visual Studio 2022 (or another IDE that supports C# and MSBuild) with the **.NET desktop development** workload installed. The project targets **.NET Framework 4.8**, which ships with that workload.
+  </Step>
+
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/Vainstains/NoodleMapper.git
+    cd NoodleMapper
+    ```
+  </Step>
+
+  <Step title="Set the ChroMapperDir environment variable">
+    The `.csproj` file resolves all ChroMapper assembly references through an MSBuild property called `$(ChroMapperDir)`. Set it to the root of your ChroMapper install — the directory that contains `ChroMapper.exe`.
+
+    **Windows (System Properties > Environment Variables):**
+    ```
+    ChroMapperDir = C:\Program Files\ChroMapper
+    ```
+
+    **Or per-machine in a `Directory.Build.props` file** (place it next to the `.sln`):
+    ```xml
+    <Project>
+      <PropertyGroup>
+        <ChroMapperDir>C:\Program Files\ChroMapper</ChroMapperDir>
+      </PropertyGroup>
+    </Project>
+    ```
+
+    The `.csproj` expects the following layout under `$(ChroMapperDir)`:
+    ```
+    $(ChroMapperDir)\
+    ├── ChroMapper.exe
+    ├── ChroMapper_Data\
+    │   └── Managed\
+    │       ├── Main.dll
+    │       ├── Input.dll
+    │       ├── 0Harmony.dll
+    │       └── ... (other Unity/ChroMapper assemblies)
+    └── Plugins\
+    ```
+  </Step>
+
+  <Step title="Restore NuGet packages">
+    The build requires **Krafs.Publicizer 2.3.0**, which makes internal ChroMapper types accessible at compile time. NuGet restores it automatically when you build, or you can restore explicitly:
+
+    ```bash
+    nuget restore NoodleMapper.sln
+    ```
+
+    If NuGet is not on your `PATH`, open the solution in Visual Studio and use **Tools > NuGet Package Manager > Restore Packages**.
+  </Step>
+
+  <Step title="Build the project">
+    ```bash
+    msbuild NoodleMapper\NoodleMapper.csproj /p:Configuration=Release
+    ```
+
+    Or build from Visual Studio with **Build > Build Solution**.
+
+    The post-build step in the `.csproj` copies the output automatically:
+
+    ```xml
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="xcopy /Y /F &quot;$(ProjectDir)bin\$(Configuration)\$(TargetName).dll&quot; &quot;$(ChroMapperDir)\Plugins\&quot;" />
+    </Target>
+    ```
+
+    After a successful build, `NoodleMapper.dll` is already in `$(ChroMapperDir)\Plugins\`. Skip the manual copy step below.
+  </Step>
+</Steps>
+
+---
+
+## Option B: Manual install (pre-built binary)
+
+<Steps>
+  <Step title="Obtain the DLL">
+    Download `NoodleMapper.dll` from the [GitHub releases page](https://github.com/Vainstains/NoodleMapper/releases) or from a build artifact.
+  </Step>
+
+  <Step title="Locate the ChroMapper Plugins folder">
+    Open your ChroMapper install directory and find the `Plugins\` subfolder:
+
+    ```
+    C:\Program Files\ChroMapper\Plugins\
+    ```
+
+    If the folder does not exist, create it.
+  </Step>
+
+  <Step title="Copy the DLL">
+    Copy `NoodleMapper.dll` into `Plugins\`:
+
+    ```
+    C:\Program Files\ChroMapper\Plugins\NoodleMapper.dll
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Verify the installation
+
+<Steps>
+  <Step title="Launch ChroMapper">
+    Start ChroMapper normally. NoodleMapper loads at startup via ChroMapper's plugin system — no additional configuration is required.
+  </Step>
+
+  <Step title="Open a song in the Song Edit Menu">
+    Select any song from the song list and open it. You should see two new buttons in the **bottom-right corner of the song info panel**:
+
+    - A grey **NoodleMapper** button
+    - A blue-grey **Git** button
+
+    If neither button appears, the DLL is not in the correct `Plugins\` folder or ChroMapper did not load it. Check the ChroMapper log for errors.
+  </Step>
+
+  <Step title="Confirm the plugin identifier">
+    NoodleMapper registers itself under the Harmony ID `com.Vainstains.NoodleMapper`. If you see errors in the ChroMapper console mentioning this ID, the plugin loaded but encountered a runtime error — please open an issue on GitHub.
+  </Step>
+</Steps>
+
+<Note>
+  NoodleMapper does not modify any ChroMapper files during installation. Removing it is as simple as deleting `NoodleMapper.dll` from the `Plugins\` folder.
+</Note>
+
+## Settings file
+
+On first run, NoodleMapper creates a settings file at:
+
+```
+%AppData%\..\LocalLow\BeatGames\BeatSaber\NoodleMapper.json
+```
+
+More precisely, the path is `Application.persistentDataPath + "/NoodleMapper.json"` — the same persistent data directory Unity uses for Beat Saber. You can edit this JSON file manually if needed; NoodleMapper reloads settings on demand.

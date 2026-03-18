@@ -1,0 +1,76 @@
+---
+title: Working with Map Ranges
+description: How to add, name, color, reorder, sort, and delete map ranges in the NoodleMapper editor window.
+---
+
+Map ranges mark sections of your difficulty with a name and a color. They appear as colored bars in the ChroMapper timeline, giving you a visual overview of your map's structure at a glance.
+
+## Opening the NoodleMapper window
+
+Press **Ctrl+N** while inside the mapper scene (the note editor) to open the NoodleMapper window. The shortcut works as long as the Node Editor is not open.
+
+<Note>
+  The NoodleMapper window only shows range controls when NoodleMapper is enabled for the currently loaded difficulty. If you see the message "NM isn't enabled in this difficulty", go to the Song Edit Menu and enable it first.
+</Note>
+
+## The range list
+
+The range list displays all ranges for the current difficulty. Each row shows:
+
+- A **text box** for the range name
+- A **color swatch button** showing the range's color
+- A **beat range label** (e.g., `4 - 16`) with `=` buttons on each side
+- An **X** button to delete the range
+- A **drag handle** on the left for reordering
+
+## Steps
+
+<Steps>
+  <Step title="Create a new range">
+    Move the playhead to where you want the range to start, then click the **new...** button at the bottom of the range list.
+
+    A new range is created with:
+    - A default name like `Range 1`, `Range 2`, etc.
+    - A randomly generated color
+    - `StartBeat` set to the current playhead position
+    - `EndBeat` set to one beat after the start
+  </Step>
+
+  <Step title="Set the start and end beats">
+    Move the playhead to the beat you want, then click the **=** button on the **left** side of the beat range label to set the start beat, or the **=** button on the **right** side to set the end beat. The label updates immediately and the timeline refreshes.
+  </Step>
+
+  <Step title="Name the range">
+    Click into the text box and type a name.
+
+    <Note>
+      If another range already has the same name, the new range automatically inherits that range's color. This lets you color-code map sections semantically — for example, naming all chorus sections "Chorus" will keep them visually consistent.
+    </Note>
+  </Step>
+
+  <Step title="Change the range color">
+    Click the **color swatch button** next to the name field. ChroMapper's built-in color picker opens. Pick a color and confirm to apply it. The timeline updates immediately.
+  </Step>
+
+  <Step title="Reorder ranges by dragging">
+    Drag any range row by its handle to move it to a different position in the list. The underlying data order updates to match.
+  </Step>
+
+  <Step title="Sort ranges by start beat">
+    Click the **sort** button at the bottom of the range list to sort all ranges in ascending order by their start beat.
+  </Step>
+
+  <Step title="Delete a range">
+    Click the **X** button on the right side of a range row. A confirmation dialog appears. Click **Confirm** to permanently remove the range.
+
+    <Note>
+      Deletion cannot be undone. Make sure you want to remove the range before confirming.
+    </Note>
+  </Step>
+</Steps>
+
+## Timeline display
+
+Ranges are displayed as semi-transparent colored bars along the left side of the ChroMapper timeline. Each bar shows the range name as a rotated label. Bars include start and end markers so you can see exact beat boundaries at a glance.
+
+Only ranges that fall within the currently visible portion of the timeline are rendered — ranges outside the view are hidden automatically for performance.

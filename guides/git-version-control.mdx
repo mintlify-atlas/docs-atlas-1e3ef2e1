@@ -1,0 +1,108 @@
+---
+title: Git Version Control
+description: Use NoodleMapper's built-in Git panel to initialize a repo, manage remotes, and commit, fetch, pull, and push your map.
+---
+
+NoodleMapper includes a Git panel that wraps common Git operations directly inside ChroMapper. This lets you version-control your map without leaving the editor.
+
+<Note>
+  Git must be installed and available on your system `PATH` for any of these features to work.
+</Note>
+
+## Opening the Git panel
+
+The **Git** button sits in the bottom-right corner of ChroMapper's song info panel, immediately to the left of the **NoodleMapper** button. Click it to open (or close) the **NoodleMapper Git** window.
+
+## Initializing a repository
+
+If the song folder is not yet a Git repository, the panel shows a **"Not a git repository."** message and an **Initialize Git Repo** button.
+
+<Steps>
+  <Step title="Click Initialize Git Repo">
+    Click the button. NoodleMapper runs `git init` in the song directory.
+  </Step>
+
+  <Step title="Review the generated .gitignore">
+    NoodleMapper automatically creates a `.gitignore` file and stages it with `git add .gitignore`.
+
+    ```gitignore
+    # ChroMapper autosaves
+    autosaves/
+
+    # Zip exports
+    *.zip
+
+    # OS / editor junk
+    .DS_Store
+    Thumbs.db
+    desktop.ini
+    ```
+
+    The output area at the bottom of the panel will show `Initialized repo and wrote .gitignore.` on success.
+  </Step>
+</Steps>
+
+## Managing a remote
+
+Once the folder is a Git repository, the panel shows a **Remote (origin)** row.
+
+| Control | What it does |
+|---|---|
+| Text box | Displays the current `origin` URL; edit to type a new one |
+| **Set** | Runs `git remote set-url origin <url>`, falling back to `git remote add origin <url>` if no remote exists yet |
+| **Clr** | Runs `git remote remove origin` to clear the remote entirely |
+
+<Note>
+  The URL field is pre-filled with the current `origin` URL whenever the panel is opened or rebuilt.
+</Note>
+
+## Committing changes
+
+<Steps>
+  <Step title="Click Commit">
+    Click the **Commit** button. An input box prompts you for a commit message.
+  </Step>
+
+  <Step title="Enter a commit message and confirm">
+    Type your message and click confirm. NoodleMapper first stages every file with `git add -A`, then runs `git commit -m "<your message">`.
+
+    The output area shows the result. If staging fails, the commit is not attempted.
+  </Step>
+</Steps>
+
+<Tip>
+  Save your map in ChroMapper before committing so the latest `.map` file changes are on disk and get included in the commit.
+</Tip>
+
+## Fetch, Pull, and Push
+
+The **Fetch**, **Pull**, and **Push** buttons run the corresponding Git operations against `origin`:
+
+| Button | Git command |
+|---|---|
+| Fetch | `git fetch origin` |
+| Pull | `git pull origin` |
+| Push | `git push origin` |
+
+All three operations run asynchronously. The output area turns yellow while an operation is running.
+
+### Push with no remote configured
+
+If you click **Push** and no remote is set:
+
+- **If GitHub CLI (`gh`) is installed:** A dialog asks whether to create a private GitHub repository. Confirming runs `gh repo create --source=. --remote=origin --push --private --confirm`, which creates the repo, sets `origin`, and pushes in one step.
+- **If `gh` is not installed:** An error message is shown: `No remote configured and GitHub CLI (gh) is not installed.`
+
+<Warning>
+  Push is a non-reversible network operation. Make sure your commit history is in the state you want before pushing.
+</Warning>
+
+## Output area
+
+The output area at the bottom of the Git panel displays the result of the last operation:
+
+| Color | Meaning |
+|---|---|
+| Yellow | Operation is still running |
+| Red | Operation failed (output starts with "Error") |
+| White | Operation succeeded |

@@ -1,0 +1,68 @@
+---
+title: Cloning Maps from Git
+description: How to clone a Beat Saber map repository from GitHub or any Git URL into ChroMapper's CustomWIPLevels folder.
+---
+
+The **Clone Map from Git** window lets you clone an existing map repository directly from the Song Select screen. Cloned maps land in ChroMapper's `CustomWIPLevels` folder and appear immediately as new songs.
+
+<Note>
+  Git must be installed and on your system `PATH` to clone any repository.
+</Note>
+
+## Opening the window
+
+On the **Song Select** screen, click the **Clone from Git** button in the top-right corner of the song info panel. The **Clone Map from Git** window opens.
+
+The window shows the destination path at the top — this is always ChroMapper's configured `CustomWIPLevels` folder.
+
+## Cloning from your GitHub repos (automatic listing)
+
+If the **GitHub CLI (`gh`)** is installed and you are logged in, the window automatically fetches a list of your GitHub repositories and filters them to show only repos that contain an `Info.dat` file at the root — indicating they are Beat Saber maps.
+
+<Steps>
+  <Step title="Wait for the repo list to load">
+    When the window opens, NoodleMapper queries the GitHub API for your account's repositories. A "Loading..." indicator appears while this is in progress.
+
+    Once loaded, each detected map repo appears as a button labelled with the repository name.
+  </Step>
+
+  <Step title="Click a repo name to clone it">
+    Click the button for the repo you want. NoodleMapper runs `git clone <url>` into your `CustomWIPLevels` folder immediately — no additional confirmation step.
+
+    The output area shows progress and the final clone path on success.
+  </Step>
+</Steps>
+
+<Note>
+  If you have repositories that do not contain an `Info.dat` at the repository root, they are silently excluded from the list. Only map repos are shown.
+</Note>
+
+## Cloning from any Git URL
+
+You can clone any Git repository regardless of whether `gh` is installed.
+
+<Steps>
+  <Step title="Paste the Git URL">
+    In the **Git URL** field, paste the full clone URL of the repository (e.g., `https://github.com/user/map-repo.git`).
+  </Step>
+
+  <Step title="Click Clone to WIP Levels">
+    Click the **Clone to WIP Levels** button. NoodleMapper runs `git clone <url>` into your `CustomWIPLevels` folder.
+
+    The button label changes to **Cloning...** while the operation is running.
+  </Step>
+
+  <Step title="Check the output">
+    The output area at the bottom of the window shows the result:
+    - On success: the path the repo was cloned into.
+    - On failure: the error from Git.
+  </Step>
+</Steps>
+
+## After cloning
+
+The cloned repository appears as a new folder inside `CustomWIPLevels`. ChroMapper will detect it as a new song — you may need to refresh the song list or restart ChroMapper for it to appear.
+
+<Note>
+  The GitHub CLI (`gh`) is only required for the automatic repo listing feature. Cloning via a pasted URL works with just `git`.
+</Note>

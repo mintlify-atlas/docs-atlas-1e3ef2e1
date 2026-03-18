@@ -1,0 +1,98 @@
+---
+title: "Map ranges"
+description: "Named, color-coded beat spans that appear as visual bars along the ChroMapper timeline. Ranges are a mapper's annotation tool — they don't affect gameplay."
+---
+
+A map range marks a span of beats in your difficulty with a name and a color. NoodleMapper draws each range as a colored bar directly in the ChroMapper timeline so you can see section boundaries at a glance while you edit.
+
+## What you see in the editor
+
+Each range appears as a thin vertical bar along the left edge of the timeline, positioned between its start and end beats. The bar has:
+
+- A **colored fill** at 20% opacity derived from the range's color
+- A **start marker** at the bottom of the bar (a distinct arrow/endpoint sprite)
+- An **end marker** at the top of the bar (shown only when the range spans more than 0.01 beats)
+- A **label** rotated 90° along the bar showing the range's name
+
+Bars update their position in real time as you scroll through the timeline. Only bars that fall within the current view window are rendered — bars outside the visible range are hidden automatically.
+
+<Note>
+If two ranges share the same `"n"` (name) value, they automatically sync colors in the editor. Changing the color of one renames them all.
+</Note>
+
+## Single-beat vs. ranged markers
+
+When a range's start beat and end beat are within 0.01 beats of each other it is treated as a **single-beat marker**:
+
+- Only the start marker sprite is shown (a different, single-point sprite)
+- The end marker is hidden
+- The `"e"` field is omitted from the serialized JSON
+
+A range with a meaningful span between start and end shows both markers and a proportionally sized bar.
+
+## Data model
+
+| Field | Type | JSON key | Default | Description |
+|---|---|---|---|---|
+| `StartBeat` | `float` | `"s"` | `0` | Beat where the range begins |
+| `EndBeat` | `float` | `"e"` | same as `"s"` | Beat where the range ends. Omitted when `abs(start - end) < 0.01` |
+| `Color` | Unity `Color` | `"c"` | `Color.white` | Display color of the bar |
+| `Name` | `string` | `"n"` | `""` | Label shown on the bar |
+
+## JSON format
+
+Ranges are stored in the `.map` file under the top-level `"ranges"` array. The color is serialized as a Unity `Color` JSON object with `r`, `g`, `b`, and `a` components (each 0–1).
+
+### Ranged example
+
+```json ExpertPlusStandard.map
+{
+  "modMap": "MyEffects",
+  "ranges": [
+    {
+      "s": 16.0,
+      "e": 32.0,
+      "c": { "r": 0.2, "g": 0.6, "b": 1.0, "a": 1.0 },
+      "n": "Chorus"
+    },
+    {
+      "s": 32.0,
+      "e": 48.0,
+      "c": { "r": 1.0, "g": 0.4, "b": 0.2, "a": 1.0 },
+      "n": "Drop"
+    }
+  ]
+}
+```
+
+### Single-beat marker example
+
+When `"e"` is absent the range is a point marker at beat `"s"`.
+
+```json ExpertPlusStandard.map
+{
+  "ranges": [
+    {
+      "s": 64.0,
+      "c": { "r": 1.0, "g": 1.0, "b": 0.0, "a": 1.0 },
+      "n": "Solo start"
+    }
+  ]
+}
+```
+
+## Where ranges are stored
+
+Ranges live inside the per-difficulty `.map` file, not in the Beat Saber `.dat` file:
+
+```
+YourSong/
+└── NoodleMapper/
+    └── ExpertPlusStandard.map   ← "ranges" array lives here
+```
+
+See [Modmaps](/concepts/modmaps) for details on how `.map` files relate to `.modmap` files.
+
+<Tip>
+Use the same `"n"` value on ranges across multiple sections to group them visually — the color sync keeps them consistent without any extra work.
+</Tip>
