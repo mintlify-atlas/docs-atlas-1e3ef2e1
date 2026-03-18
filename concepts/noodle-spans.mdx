@@ -12,10 +12,10 @@ A noodle span defines a window of time in your map — measured in beats — and
 | `StartBeat` | `float` | `"b"` | `0` | Beat where the span begins |
 | `Duration` | `float` | `"d"` | `0` | Length of the span in beats |
 | `Filters` | `List<INoodleFilter>` | `"filters"` | `[]` | Filters that determine which notes are affected |
-| `Processors` | `List<INoodleSpanProcessor>` | _(runtime only)_ | `[]` | Operations applied to each matched note |
+| `Processors` | `List<INoodleSpanProcessor>` | _(not serialized)_ | `[]` | Processors that can be applied to matched objects at runtime |
 
 <Note>
-Processors are applied at runtime by NoodleMapper and are not persisted in the JSON file. Only filters are serialized.
+Processors are not serialized to JSON — only `Filters` are saved to the `.modmap` file. The `Processors` list exists on the in-memory `NoodleSpan` object and is populated by processing pipelines at runtime.
 </Note>
 
 ## Filters
@@ -30,7 +30,7 @@ public interface INoodleFilter
 }
 ```
 
-`TestAgainst` returns `true` when the object should be processed. All filters in a span's list must pass for a note to be affected (AND logic).
+`TestAgainst` returns `true` when the object should be affected. Filters narrow down which objects a span acts on.
 
 ### HandTypeFilter
 

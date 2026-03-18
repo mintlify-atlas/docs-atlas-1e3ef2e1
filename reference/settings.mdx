@@ -13,11 +13,11 @@ NoodleMapper stores plugin-wide configuration in a single JSON file managed by t
 
 `Application.persistentDataPath` is a Unity path that resolves to a platform-specific location, typically:
 
-| Platform | Path |
+| Platform | Typical path |
 |----------|------|
-| Windows  | `%APPDATA%/../LocalLow/{CompanyName}/{ProductName}` |
-| macOS    | `~/Library/Application Support/{CompanyName}/{ProductName}` |
-| Linux    | `~/.config/unity3d/{CompanyName}/{ProductName}` |
+| Windows  | `%APPDATA%\..\LocalLow\BeatGames\ChroMapper\NoodleMapper.json` |
+| macOS    | `~/Library/Application Support/BeatGames/ChroMapper/NoodleMapper.json` |
+| Linux    | `~/.config/unity3d/BeatGames/ChroMapper/NoodleMapper.json` |
 
 <Info>
   The settings file is created automatically on first access if it does not exist. You do not need to create it manually.
@@ -43,7 +43,8 @@ Reads a value from the settings file by key path. If the key is not present and 
 **Returns:** The stored `JSONNode`, or `null` if the key is absent and no default was supplied.
 
 ```csharp Example
-var opacity = Settings.Get("editor.rangeOpacity", 0.5f);
+// Returns the stored value, or writes and returns the default if not set
+var value = Settings.Get("myKey", new JSONString("default"));
 ```
 
 ---
@@ -64,7 +65,7 @@ Writes a value to the settings file at the given key path. The file is saved to 
 **Returns:** The value that was written.
 
 ```csharp Example
-Settings.Set("editor.rangeOpacity", 0.75f);
+Settings.Set("myKey", new JSONString("myValue"));
 ```
 
 ---
@@ -88,29 +89,30 @@ Settings.Reload();
 Keys use **dot notation** to address nodes within the JSON object. The `Settings` class uses `Data.GetNode` and `Data.SetNode` internally to resolve paths.
 
 ```csharp Key path examples
-// Reads/writes the top-level key "theme"
-Settings.Get("theme");
+// Reads/writes the top-level key "myKey"
+Settings.Get("myKey");
 
-// Reads/writes { "editor": { "showRanges": ... } }
-Settings.Get("editor.showRanges", true);
+// Reads/writes a nested path: { "section": { "item": ... } }
+Settings.Get("section.item");
 ```
 
 <Note>
-  The settings file is a flat or nested JSON object. Nesting depth depends on the dot-separated paths used by the code that reads and writes settings.
+  Key path traversal is handled by `Data.GetNode` and `Data.SetNode`, which split the key on `.` and walk the JSON object tree. A single-segment key addresses a top-level field; a multi-segment key creates or traverses nested objects.
 </Note>
 
 ---
 
 ## Example settings file
 
+A newly created settings file starts empty. Keys are only present if code has explicitly called `Settings.Set`.
+
 ```json NoodleMapper.json
-{
-  "editor": {
-    "showRanges": true,
-    "rangeOpacity": 0.5
-  }
-}
+{}
 ```
+
+<Note>
+  NoodleMapper does not define any built-in settings keys in the current version. The settings system is available for use by code that calls `Settings.Get` / `Settings.Set`.
+</Note>
 
 ---
 

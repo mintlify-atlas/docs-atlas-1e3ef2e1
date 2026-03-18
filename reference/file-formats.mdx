@@ -7,15 +7,13 @@ NoodleMapper uses three file types to store per-difficulty data, effect span dat
 
 ## Directory structure
 
-<Tree>
-  <Tree.Folder name="{SongDir}" defaultOpen>
-    <Tree.Folder name="NoodleMapper" defaultOpen>
-      <Tree.File name="{Difficulty}{Characteristic}.map" />
-      <Tree.File name="{name}.modmap" />
-    </Tree.Folder>
-    <Tree.File name="Info.dat" />
-  </Tree.Folder>
-</Tree>
+```
+{SongDir}/
+├── Info.dat
+└── NoodleMapper/
+    ├── {Difficulty}{Characteristic}.map
+    └── {name}.modmap
+```
 
 ---
 
@@ -165,15 +163,16 @@ Stores plugin-wide settings managed by the `Settings` class.
 
 **Location:** `{Application.persistentDataPath}/NoodleMapper.json`
 
-The file is a flat JSON object. It is created automatically on first access if it does not exist. Keys use dot notation as defined by the `Settings.Get` / `Settings.Set` API.
+The file is a JSON object managed by the `Settings` class. It is created automatically on first access if it does not exist. Keys use dot notation as defined by the `Settings.Get` / `Settings.Set` API.
 
 See [Settings](/reference/settings) for the full API reference.
 
 ### Example
 
 ```json NoodleMapper.json
-{
-  "editor.showRanges": true,
-  "editor.rangeOpacity": 0.5
-}
+{}
 ```
+
+<Note>
+  NoodleMapper does not currently define any built-in settings keys. The file starts empty and is populated only by code that explicitly calls `Settings.Set`.
+</Note>

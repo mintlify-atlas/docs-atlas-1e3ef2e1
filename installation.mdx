@@ -147,7 +147,13 @@ NoodleMapper is distributed as a single `.dll` file. Installation means placing 
 On first run, NoodleMapper creates a settings file at:
 
 ```
-%AppData%\..\LocalLow\BeatGames\BeatSaber\NoodleMapper.json
+{Application.persistentDataPath}/NoodleMapper.json
 ```
 
-More precisely, the path is `Application.persistentDataPath + "/NoodleMapper.json"` — the same persistent data directory Unity uses for Beat Saber. You can edit this JSON file manually if needed; NoodleMapper reloads settings on demand.
+`Application.persistentDataPath` is ChroMapper's Unity persistent data directory. On Windows this is typically:
+
+```
+%AppData%\..\LocalLow\BeatGames\ChroMapper\NoodleMapper.json
+```
+
+You can edit this JSON file manually if needed; NoodleMapper reloads settings on demand via `Settings.Reload()`.
